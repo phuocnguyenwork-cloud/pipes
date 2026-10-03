@@ -46,17 +46,18 @@ python main.py --rows 7 --cols 7 --seed 42
 pytest
 ```
 
-## Điều khiển UI
+## Điều khiển UI & Trực quan hóa suy luận
 
 | Phím | Chức năng |
 |------|-----------|
-| Chuột trái | Xoay ô CW 90° |
-| `N` | Tạo puzzle mới |
-| `R` | Reset về ban đầu |
-| `S` | Chạy solver và vào chế độ replay |
-| `SPACE` | Phát/dừng replay |
-| `← →` | Bước replay thủ công |
-| `ESC` | Thoát |
+| Chuột trái | Chơi thủ công: Xoay ô CW 90° |
+| `T` | **Xem vết suy luận AI (Trace Replay)**: Hiển thị từng bước thử sai, lý do vi phạm (PRUNE), đào sâu (FORWARD) và quay lui (BACKTRACK) trên bảng điều khiển |
+| `S` | **Xem nghiệm (Solution Replay)**: Chạy solver và hiển thị chuỗi bước dẫn thẳng tới lời giải |
+| `SPACE` | Tạm dừng / Tiếp tục phát tự động |
+| `←` / `→` | Lùi lại / Tiến tới 1 bước suy luận thủ công |
+| `↑` / `↓` | Tăng / Giảm tốc độ chạy replay |
+| `N` / `R` | Tạo màn mới / Đặt lại trạng thái ban đầu |
+| `ESC` | Thoát ứng dụng |
 
 ## Biểu diễn dữ liệu
 

@@ -55,6 +55,30 @@ class _Timer:
 
 
 # ---------------------------------------------------------------------------
+# TraceStep – Vết từng bước suy luận của solver
+# ---------------------------------------------------------------------------
+
+@dataclass
+class TraceStep:
+    """Mô tả một bước suy luận/thử sai của thuật toán.
+
+    Attributes
+    ----------
+    r, c            : tọa độ ô đang được chọn duyệt
+    rotation        : số lần xoay 90° CW hiện tại (0..3)
+    action          : loại hành động: "TRY", "PRUNE", "FORWARD", "BACKTRACK", "SOLVED"
+    reason          : lý do cụ thể (tại sao chọn hướng này, tại sao vi phạm, tại sao quay lui)
+    grid_rotations  : snapshot ma trận xoay tại bước này để hiển thị trực quan
+    """
+    r: int
+    c: int
+    rotation: int
+    action: str
+    reason: str
+    grid_rotations: Optional[np.ndarray] = None
+
+
+# ---------------------------------------------------------------------------
 # SolveResult
 # ---------------------------------------------------------------------------
 
@@ -65,13 +89,15 @@ class SolveResult:
     Attributes
     ----------
     solved      : True nếu solver tìm được nghiệm
-    rotations   : mảng H×W int8 với số lần xoay cuối cùng
-    moves       : danh sách move dạng (r, c) hoặc (r, c, k)
+    rotations   : mảng H×W int8 với số lần xoay cuối cùng (nghiệm chuẩn)
+    moves       : danh sách move dẫn đến nghiệm (r, c, k)
+    trace       : toàn bộ quá trình tìm kiếm/thử sai/quay lui kèm lý giải
     stats       : dict thống kê (nodes, time_s, iterations, …)
     """
     solved: bool
     rotations: np.ndarray
     moves: List[Tuple] = field(default_factory=list)
+    trace: List[TraceStep] = field(default_factory=list)
     stats: Dict = field(default_factory=dict)
 
 

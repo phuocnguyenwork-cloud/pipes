@@ -230,3 +230,27 @@ class TestBacktrackSolver:
 
         state = State(puzzle=puzzle, rotations=result.rotations)
         assert is_solved(state)
+
+    def test_trace_contains_reasons_and_actions(self):
+        """Kiểm tra trace lưu đúng cấu trúc: ô, hướng, lý do, action."""
+        from solvers.base import Budget, get_solver
+        import solvers.backtracking  # noqa
+
+        puzzle, _ = generate_puzzle(h=3, w=3, seed=12)
+        solver = get_solver("backtrack")
+        result = solver.solve(puzzle, Budget(max_time=5.0))
+        assert result.solved
+        assert len(result.trace) > 0
+
+        # Kiểm tra các loại action có mặt
+        actions = {s.action for s in result.trace}
+        assert "FORWARD" in actions
+        assert "SOLVED" in actions
+
+        # Kiểm tra mỗi step đều có lý do và tọa độ hợp lệ
+        for step in result.trace:
+            assert 0 <= step.r < puzzle.h
+            assert 0 <= step.c < puzzle.w
+            assert 0 <= step.rotation <= 3
+            assert isinstance(step.reason, str) and len(step.reason) > 0
+
