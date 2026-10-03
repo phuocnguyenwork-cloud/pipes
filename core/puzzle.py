@@ -151,6 +151,18 @@ class State:
     def copy(self) -> "State":
         return State(puzzle=self.puzzle, rotations=self.rotations.copy())
 
+    def __hash__(self) -> int:
+        return hash((self.puzzle, self.rotations.tobytes()))
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, State):
+            return NotImplemented
+        return self.puzzle == other.puzzle and np.array_equal(self.rotations, other.rotations)
+
+    def __lt__(self, other) -> bool:
+        # Hỗ trợ PriorityQueue/heapq khi có hai node cùng giá trị f(n)
+        return False
+
     @classmethod
     def from_puzzle(cls, puzzle: Puzzle, rotations: np.ndarray | None = None) -> "State":
         """Tạo State từ Puzzle. Nếu không có rotations thì mặc định 0."""

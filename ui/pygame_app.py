@@ -33,7 +33,8 @@ from core.puzzle import State, N, E, S, W
 from core.engine import rotate, flood_fill, is_solved, count_violations
 from generator.tree_gen import generate_puzzle, make_initial_state, make_solution_state
 from solvers.base import Budget, TraceStep, get_solver
-import solvers.backtracking  # noqa: F401 – đăng ký solver
+import solvers.backtracking  # noqa: F401 – đăng ký backtrack solver
+import solvers.astar         # noqa: F401 – đăng ký astar solver
 
 
 # ---------------------------------------------------------------------------
@@ -200,10 +201,10 @@ class PipesApp:
         self._active_action = ""
         self._active_reason = "Đã đặt lại trạng thái ban đầu."
 
-    def _run_solver(self, mode: str = "trace"):
-        """Chạy solver và nạp trace/moves vào bộ phát."""
-        budget = Budget(max_time=10.0)
-        solver = get_solver("backtrack")
+    def _run_solver(self, solver_name: str = "backtrack", mode: str = "trace"):
+        """Chạy solver được chọn và nạp trace/moves vào bộ phát."""
+        budget = Budget(max_time=10.0, max_nodes=50000)
+        solver = get_solver(solver_name)
         result = solver.solve(self._puzzle, budget)
 
         if result.solved:
@@ -212,6 +213,7 @@ class PipesApp:
             self._replay_idx = 0
             self._replay_playing = True
             self._replay_last_t = time.perf_counter()
+            self._active_solver_name = solver_name.upper()
 
             if mode == "trace" and self._trace_steps:
                 self._replay_mode = "trace"
@@ -220,13 +222,13 @@ class PipesApp:
                 self._replay_mode = "solution"
                 self._state = make_initial_state(self._puzzle)
                 self._active_action = "SOLVED"
-                self._active_reason = f"Đã giải xong ({result.stats.get('nodes')} nodes, {result.stats.get('time_s', 0):.3f}s)"
+                self._active_reason = f"[{self._active_solver_name}] Đã giải xong ({result.stats.get('nodes')} nodes, {result.stats.get('time_s', 0):.3f}s)"
 
-            print(f"[Solver] Thành công! nodes={result.stats.get('nodes')}, "
+            print(f"[{self._active_solver_name}] Thành công! nodes={result.stats.get('nodes')}, "
                   f"trace_steps={len(result.trace)}, time={result.stats.get('time_s', 0):.3f}s")
         else:
             self._active_action = "PRUNE"
-            self._active_reason = "Không tìm được nghiệm trong giới hạn budget!"
+            self._active_reason = f"[{solver_name.upper()}] Không tìm được nghiệm trong giới hạn budget!"
 
     def _apply_trace_step(self, idx: int):
         """Áp dụng bước thứ idx trong trace."""
@@ -372,7 +374,7 @@ class PipesApp:
 
         # Hướng dẫn phím ở đáy panel
         speed_str = f"{1.0/self._replay_speed:.1f}x"
-        hints = f"T:Xem suy luận | S:Xem nghiệm | SPACE:Chạy({speed_str}) | ←→:Bước | N:Mới | R:Reset"
+        hints = f"1/T:Backtrack | 2/A:A* | S:Nghiệm | SPACE:Chạy({speed_str}) | ←→:Bước | N:Mới | R:Reset"
         surf_hint = self.font.render(hints, True, (110, 125, 160))
         self.screen.blit(surf_hint, (MARGIN + 12, panel_y + PANEL_H - 24))
 
@@ -409,12 +411,15 @@ class PipesApp:
                         self._reset()
                     elif event.key == pygame.K_n:
                         self._new_puzzle()
-                    elif event.key == pygame.K_t:
-                        # Chạy solver và xem toàn bộ vết suy luận
-                        self._run_solver(mode="trace")
+                    elif event.key in (pygame.K_t, pygame.K_1):
+                        # Chạy Backtracking tracer
+                        self._run_solver(solver_name="backtrack", mode="trace")
+                    elif event.key in (pygame.K_a, pygame.K_2):
+                        # Chạy A* Search tracer
+                        self._run_solver(solver_name="astar", mode="trace")
                     elif event.key == pygame.K_s:
                         # Xem trực tiếp nghiệm
-                        self._run_solver(mode="solution")
+                        self._run_solver(solver_name="backtrack", mode="solution")
                     elif event.key == pygame.K_SPACE:
                         if self._replay_mode in ("trace", "solution"):
                             self._replay_playing = not self._replay_playing

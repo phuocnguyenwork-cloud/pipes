@@ -254,3 +254,63 @@ class TestBacktrackSolver:
             assert 0 <= step.rotation <= 3
             assert isinstance(step.reason, str) and len(step.reason) > 0
 
+
+# ---------------------------------------------------------------------------
+# Test Pure Search Problem Interface & A* Search
+# ---------------------------------------------------------------------------
+
+class TestSearchProblem:
+    def test_problem_initial_state_and_is_goal(self):
+        from core.problem import PipesProblem, Action
+        puzzle, sol_rot = generate_puzzle(h=3, w=3, seed=5)
+        problem = PipesProblem(puzzle)
+
+        s0 = problem.initial_state()
+        assert s0.puzzle == puzzle
+        assert problem.heuristic(s0) >= 0
+
+        # Trạng thái nghiệm phải là goal và heuristic = 0
+        sol_state = make_solution_state(puzzle, sol_rot)
+        assert problem.is_goal(sol_state)
+        assert problem.heuristic(sol_state) == 0.0
+
+    def test_problem_actions_and_result(self):
+        from core.problem import PipesProblem, Action
+        puzzle, _ = generate_puzzle(h=2, w=2, seed=1)
+        problem = PipesProblem(puzzle)
+        s0 = problem.initial_state()
+
+        acts = problem.actions(s0)
+        assert len(acts) == 4  # 2x2 = 4 actions
+
+        # Áp dụng action xoay ô (0, 0)
+        a = Action(0, 0, 1)
+        s1 = problem.result(s0, a)
+        assert s1.rotations[0, 0] == (s0.rotations[0, 0] + 1) % 4
+        assert s1 != s0
+
+    def test_state_hashable_in_set_and_dict(self):
+        puzzle, _ = generate_puzzle(h=2, w=2, seed=2)
+        s1 = State.from_puzzle(puzzle)
+        s2 = s1.copy()
+        s3 = rotate(s1, 0, 0, 1)
+
+        visited = {s1}
+        assert s2 in visited
+        assert s3 not in visited
+
+
+class TestAStarSolver:
+    def test_astar_solve_2x2(self):
+        from solvers.base import Budget, get_solver
+        import solvers.astar  # noqa
+
+        for seed in range(3):
+            puzzle, _ = generate_puzzle(h=2, w=2, seed=seed)
+            solver = get_solver("astar")
+            result = solver.solve(puzzle, Budget(max_time=5.0))
+            assert result.solved, f"seed={seed}: A* không giải được lưới 2x2."
+            final_state = State(puzzle=puzzle, rotations=result.rotations)
+            assert is_solved(final_state)
+
+

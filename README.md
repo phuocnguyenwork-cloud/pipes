@@ -2,35 +2,37 @@
 
 Môi trường trò chơi **Pipes (FreeNet/NetWalk)** với kiến trúc tách biệt engine – generator – UI – solver, thiết kế để tích hợp và so sánh các thuật toán giải.
 
-## Cấu trúc dự án
+## Cấu trúc dự án (Pure Search Interface)
 
 ```
 pipes/
 ├── core/
-│   ├── puzzle.py      # Biểu diễn bitmask, Puzzle, State
-│   └── engine.py      # Logic thuần: rotate, flood_fill, is_solved, count_violations
+│   ├── puzzle.py      # Biểu diễn bitmask, Puzzle, State (hashable)
+│   ├── engine.py      # Logic thuần: rotate, flood_fill, is_solved, count_violations
+│   └── problem.py     # Pure Search Interface: PipesProblem, Action, heuristic, successors
 ├── generator/
-│   └── tree_gen.py    # Sinh puzzle từ cây bao trùm ngẫu nhiên
+│   └── tree_gen.py    # Sinh puzzle từ cây bao trùm ngẫu nhiên (Randomized DFS)
 ├── env/
-│   └── gym_env.py     # Môi trường Gymnasium (cho RL và tìm kiếm)
+│   └── __init__.py    # Export PipesProblem & Action
 ├── solvers/
-│   ├── base.py        # Interface Solver, Budget, SolveResult, Registry
-│   └── backtracking.py # Solver baseline: backtracking + local consistency
+│   ├── base.py        # Interface Solver, Budget, TraceStep, SolveResult, Registry
+│   ├── backtracking.py # Solver: backtracking + local consistency + trace
+│   └── astar.py       # Solver: A* Search với heuristic f(n) = g(n) + h(n)
 ├── ui/
-│   └── pygame_app.py  # Giao diện Pygame (chơi tay + replay solver)
+│   └── pygame_app.py  # Giao diện Pygame (chơi tay, Trace Replay, Solution Replay)
 ├── tests/
-│   └── test_core.py   # Unit tests
+│   └── test_core.py   # 37 unit tests
 ├── main.py            # Entry point UI
 ├── requirements.txt
 └── pyproject.toml
 ```
 
-## Cài đặt
+## Cài đặt (Siêu nhẹ, không phụ thuộc RL framework)
 
 ```bash
 pip install -r requirements.txt
 # hoặc
-pip install -e ".[dev,rl]"
+pip install -e ".[dev]"
 ```
 
 ## Chạy
