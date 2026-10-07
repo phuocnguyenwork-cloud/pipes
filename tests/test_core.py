@@ -314,3 +314,19 @@ class TestAStarSolver:
             assert is_solved(final_state)
 
 
+class TestDFSSolver:
+    def test_dfs_solve_2x2(self):
+        """Blind DFS giải được lưới 2x2 (4^4 = 256 trạng thái)."""
+        from solvers.base import Budget, get_solver
+        import solvers.dfs  # noqa
+
+        for seed in range(3):
+            puzzle, _ = generate_puzzle(h=2, w=2, seed=seed)
+            solver = get_solver("dfs")
+            result = solver.solve(puzzle, Budget(max_time=5.0))
+            assert result.solved, f"seed={seed}: Blind DFS không giải được lưới 2x2."
+            final_state = State(puzzle=puzzle, rotations=result.rotations)
+            assert is_solved(final_state)
+            assert len(result.trace) > 0
+
+

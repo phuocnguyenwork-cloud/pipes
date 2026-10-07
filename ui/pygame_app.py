@@ -35,6 +35,7 @@ from generator.tree_gen import generate_puzzle, make_initial_state, make_solutio
 from solvers.base import Budget, TraceStep, get_solver
 import solvers.backtracking  # noqa: F401 – đăng ký backtrack solver
 import solvers.astar         # noqa: F401 – đăng ký astar solver
+import solvers.dfs           # noqa: F401 – đăng ký blind dfs solver
 
 
 # ---------------------------------------------------------------------------
@@ -374,7 +375,7 @@ class PipesApp:
 
         # Hướng dẫn phím ở đáy panel
         speed_str = f"{1.0/self._replay_speed:.1f}x"
-        hints = f"1/T:Backtrack | 2/A:A* | S:Nghiệm | SPACE:Chạy({speed_str}) | ←→:Bước | N:Mới | R:Reset"
+        hints = f"1/T:Backtrack | 2/A:A* | 3/D:DFS | S:Nghiệm | SPACE:Chạy({speed_str}) | ←→:Bước | N:Mới"
         surf_hint = self.font.render(hints, True, (110, 125, 160))
         self.screen.blit(surf_hint, (MARGIN + 12, panel_y + PANEL_H - 24))
 
@@ -417,6 +418,9 @@ class PipesApp:
                     elif event.key in (pygame.K_a, pygame.K_2):
                         # Chạy A* Search tracer
                         self._run_solver(solver_name="astar", mode="trace")
+                    elif event.key in (pygame.K_d, pygame.K_3):
+                        # Chạy Blind DFS tracer
+                        self._run_solver(solver_name="dfs", mode="trace")
                     elif event.key == pygame.K_s:
                         # Xem trực tiếp nghiệm
                         self._run_solver(solver_name="backtrack", mode="solution")
